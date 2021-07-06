@@ -1,7 +1,7 @@
 use std::collections::{HashSet};
 
 // https://adventofcode.com/2018/day/1
-
+//
 // --- Day 1: Chronal Calibration ---
 //
 // "We've detected some temporal anomalies," one of Santa's Elves at the Temporal Anomaly Research
@@ -45,6 +45,7 @@ use std::collections::{HashSet};
 // Starting with a frequency of zero, what is the resulting frequency after all of the changes in
 // frequency have been applied?
 
+#[allow(dead_code)]
 pub fn part1(input: &Vec<String>) -> i32 {
     return input.iter().map(|x| x.parse::<i32>().expect("Parse error.")).sum();
 }
@@ -74,6 +75,7 @@ pub fn part1(input: &Vec<String>) -> i32 {
 //  +7, +7, -2, -7, -4 first reaches 14 twice.
 // What is the first frequency your device reaches twice?
 
+#[allow(dead_code)]
 pub fn part2(input: &Vec<String>) -> i64 {
     let mut freq = 0;
     let num_vec: Vec<i64> = input
