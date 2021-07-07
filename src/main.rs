@@ -5,12 +5,12 @@ mod aoc;
 mod helpers;
 
 fn main() {
-    let input_file = io::file_read_all_lines("input/day02.txt");
+    let input_file = io::file_read_all_lines("input/day03.txt");
 
     // Execution begins
     let start = Instant::now();
 
-    use aoc::day02 as aoc_problem;
+    use aoc::day03 as aoc_problem;
 
     // Part 1
     let first_part_sol = aoc_problem::part1(&input_file);
