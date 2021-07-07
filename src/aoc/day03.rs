@@ -56,6 +56,7 @@ use std::collections::{HashMap};
 // If the Elves all proceed with their own plans, none of them will have enough fabric. How many
 // square inches of fabric are within two or more claims?
 
+#[allow(dead_code)]
 pub fn part1(input: &Vec<String>) -> i32 {
     // Get all claims from the input vector
     let claims: Vec<Claim> = get_claims_from_input(input);
@@ -80,6 +81,7 @@ pub fn part1(input: &Vec<String>) -> i32 {
 //
 // What is the ID of the only claim that doesn't overlap?
 
+#[allow(dead_code)]
 pub fn part2(input: &Vec<String>) -> i32 {
     let mut map: HashMap<(i32, i32), i32> = HashMap::new();
     let claims = get_claims_from_input(input);
