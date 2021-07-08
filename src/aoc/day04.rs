@@ -1,6 +1,15 @@
 use chrono::{NaiveDateTime, Timelike};
 use std::collections::{HashMap, HashSet};
 
+#[allow(dead_code)]
+pub fn execute(input: &Vec<String>) -> (i32, usize) {
+    let (events, guards) = get_guards_and_events(input);
+    // Now determine how much time was spent sleeping
+    let (guard_slept_time, guard_most_occurring_min) = get_guard_sleep_time(events, guards);
+
+    return (part1(&guard_slept_time, &guard_most_occurring_min), part2(&guard_most_occurring_min));
+}
+
 // https://adventofcode.com/2018/day/4
 //
 // --- Day 4: Repose Record ---
@@ -80,11 +89,7 @@ use std::collections::{HashMap, HashSet};
 // the answer would be 10 * 24 = 240.)
 
 #[allow(dead_code)]
-pub fn part1(input: &Vec<String>) -> i32 {
-    let (events, guards) = get_guards_and_events(input);
-    // Now determine how much time was spent sleeping
-    let (guard_slept_time, guard_most_occurring_min) = get_guard_sleep_time(events, guards);
-
+pub fn part1(guard_slept_time: &HashMap<u32, i64>, guard_most_occurring_min: &HashMap<u32, [usize; 60]>) -> i32 {
     // Find the laziest guard
     let laziest_guard = guard_slept_time
         .iter()
@@ -113,10 +118,7 @@ pub fn part1(input: &Vec<String>) -> i32 {
 // the answer would be 99 * 45 = 4455.)
 
 #[allow(dead_code)]
-pub fn part2(input: &Vec<String>) -> usize {
-    let (events, guards) = get_guards_and_events(input);
-    let (_, guard_most_occurring_min) = get_guard_sleep_time(events, guards);
-
+pub fn part2(guard_most_occurring_min: &HashMap<u32, [usize; 60]>) -> usize {
     let mut occurrences: usize = 0;
     let mut minute_most_occurring: usize = 0;
     let mut guard_id: u32 = 0;
@@ -126,7 +128,7 @@ pub fn part2(input: &Vec<String>) -> usize {
             if time_table[j] > occurrences {
                 occurrences = time_table[j];
                 minute_most_occurring = j;
-                guard_id = guard;
+                guard_id = *guard;
             }
         }
     }

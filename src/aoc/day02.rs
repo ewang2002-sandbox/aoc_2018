@@ -1,3 +1,8 @@
+#[allow(dead_code)]
+pub fn execute(input: &Vec<String>) -> (i32, String) {
+    return (part1(input), part2(input));
+}
+
 // https://adventofcode.com/2018/day/2
 // --- Day 2: Inventory Management System ---
 //

@@ -1,5 +1,22 @@
 use std::collections::{HashMap};
 
+#[allow(dead_code)]
+pub fn execute(input: &Vec<String>) -> (i32, i32) {
+    // Get all claims from the input vector
+    let claims: Vec<Claim> = get_claims_from_input(input);
+    // We're going to map each possible point to the number of times we've seen that point.
+    let mut map: HashMap<(i32, i32), i32> = HashMap::new();
+    // Iterate through every claim.
+    for claim in &claims {
+        // And add each point to the map (or add one to number of times we've seen it).
+        for pair in claim.get_all_points() {
+            *map.entry(pair).or_default() += 1;
+        }
+    }
+
+    return (part1(&map), part2(&map, &claims));
+}
+
 // https://adventofcode.com/2018/day/3
 // --- Day 3: No Matter How You Slice It ---
 //
@@ -57,19 +74,7 @@ use std::collections::{HashMap};
 // square inches of fabric are within two or more claims?
 
 #[allow(dead_code)]
-pub fn part1(input: &Vec<String>) -> i32 {
-    // Get all claims from the input vector
-    let claims: Vec<Claim> = get_claims_from_input(input);
-    // We're going to map each possible point to the number of times we've seen that point.
-    let mut map: HashMap<(i32, i32), i32> = HashMap::new();
-    // Iterate through every claim.
-    for claim in claims {
-        // And add each point to the map (or add one to number of times we've seen it).
-        for pair in claim.get_all_points() {
-            *map.entry(pair).or_default() += 1;
-        }
-    }
-
+pub fn part1(map: &HashMap<(i32, i32), i32>) -> i32 {
     return map.values().map(|&x| if x == 1 { 0 } else { 1 }).sum();
 }
 
@@ -82,16 +87,8 @@ pub fn part1(input: &Vec<String>) -> i32 {
 // What is the ID of the only claim that doesn't overlap?
 
 #[allow(dead_code)]
-pub fn part2(input: &Vec<String>) -> i32 {
-    let mut map: HashMap<(i32, i32), i32> = HashMap::new();
-    let claims = get_claims_from_input(input);
-    for claim in &claims {
-        for pair in claim.get_all_points() {
-            *map.entry(pair).or_default() += 1;
-        }
-    }
-
-    for claim in &claims {
+pub fn part2(map: &HashMap<(i32, i32), i32>, claims: &Vec<Claim>) -> i32 {
+    for claim in claims {
         // Same idea as part 1. Here, we're checking to make sure ALL points in this claim
         // were seen only once.
         if claim.get_all_points().iter().all(|p| map[&p] == 1) {
@@ -122,7 +119,7 @@ fn get_claims_from_input(input: &Vec<String>) -> Vec<Claim> {
     }).collect();
 }
 
-struct Claim {
+pub struct Claim {
     claim_id: i32,
     left_edge: i32,
     top_edge: i32,

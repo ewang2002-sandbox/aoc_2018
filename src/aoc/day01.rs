@@ -1,5 +1,10 @@
 use std::collections::{HashSet};
 
+#[allow(dead_code)]
+pub fn execute(input: &Vec<String>) -> (i32, i64) {
+    return (part1(input), part2(input));
+}
+
 // https://adventofcode.com/2018/day/1
 //
 // --- Day 1: Chronal Calibration ---
