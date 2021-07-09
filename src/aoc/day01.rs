@@ -50,7 +50,6 @@ pub fn execute(input: &Vec<String>) -> (i32, i64) {
 // Starting with a frequency of zero, what is the resulting frequency after all of the changes in
 // frequency have been applied?
 
-#[allow(dead_code)]
 pub fn part1(input: &Vec<String>) -> i32 {
     return input.iter().map(|x| x.parse::<i32>().expect("Parse error.")).sum();
 }
@@ -80,7 +79,6 @@ pub fn part1(input: &Vec<String>) -> i32 {
 //  +7, +7, -2, -7, -4 first reaches 14 twice.
 // What is the first frequency your device reaches twice?
 
-#[allow(dead_code)]
 pub fn part2(input: &Vec<String>) -> i64 {
     let mut freq = 0;
     let num_vec: Vec<i64> = input

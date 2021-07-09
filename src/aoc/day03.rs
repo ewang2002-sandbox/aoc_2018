@@ -73,7 +73,6 @@ pub fn execute(input: &Vec<String>) -> (i32, i32) {
 // If the Elves all proceed with their own plans, none of them will have enough fabric. How many
 // square inches of fabric are within two or more claims?
 
-#[allow(dead_code)]
 pub fn part1(map: &HashMap<(i32, i32), i32>) -> i32 {
     return map.values().map(|&x| if x == 1 { 0 } else { 1 }).sum();
 }
@@ -86,7 +85,6 @@ pub fn part1(map: &HashMap<(i32, i32), i32>) -> i32 {
 //
 // What is the ID of the only claim that doesn't overlap?
 
-#[allow(dead_code)]
 pub fn part2(map: &HashMap<(i32, i32), i32>, claims: &Vec<Claim>) -> i32 {
     for claim in claims {
         // Same idea as part 1. Here, we're checking to make sure ALL points in this claim

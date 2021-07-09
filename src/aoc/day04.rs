@@ -88,7 +88,6 @@ pub fn execute(input: &Vec<String>) -> (i32, usize) {
 // What is the ID of the guard you chose multiplied by the minute you chose? (In the above example,
 // the answer would be 10 * 24 = 240.)
 
-#[allow(dead_code)]
 pub fn part1(guard_slept_time: &HashMap<u32, i64>, guard_most_occurring_min: &HashMap<u32, [usize; 60]>) -> i32 {
     // Find the laziest guard
     let laziest_guard = guard_slept_time
@@ -117,7 +116,6 @@ pub fn part1(guard_slept_time: &HashMap<u32, i64>, guard_most_occurring_min: &Ha
 // What is the ID of the guard you chose multiplied by the minute you chose? (In the above example,
 // the answer would be 99 * 45 = 4455.)
 
-#[allow(dead_code)]
 pub fn part2(guard_most_occurring_min: &HashMap<u32, [usize; 60]>) -> usize {
     let mut occurrences: usize = 0;
     let mut minute_most_occurring: usize = 0;

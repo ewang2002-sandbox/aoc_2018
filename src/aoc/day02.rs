@@ -45,7 +45,6 @@ pub fn execute(input: &Vec<String>) -> (i32, String) {
 //
 // What is the checksum for your list of box IDs?
 
-#[allow(dead_code)]
 pub fn part1(input: &Vec<String>) -> i32 {
     let mut two = 0;
     let mut three = 0;
@@ -88,7 +87,6 @@ pub fn part1(input: &Vec<String>) -> i32 {
 // What letters are common between the two correct box IDs? (In the example above, this is found by
 // removing the differing character from either ID, producing fgij.)
 
-#[allow(dead_code)]
 pub fn part2(input: &Vec<String>) -> String {
     for a in input {
         for b in input {
