@@ -58,7 +58,7 @@ pub fn part1(line: &String) -> usize {
             char_arr.remove(idx);
             // [..., a, b, X, x, ...]
             //                ^ (idx = n)
-            idx -= if idx < 1 {0} else {1};
+            idx -= if idx < 1 { 0 } else { 1 };
             // [..., a, b, X, x, ...]
             //             ^ (idx = n - 1)
             continue;
@@ -97,10 +97,10 @@ pub fn part2(line: &String) -> usize {
     let all_important_letters = "abcdefghijklmnopqrstuvwxyz".split("");
     let mut len_of_shortest: usize = line.len();
     for letter in all_important_letters {
-        let new_str = &line
+        let new_str = line
             .replace(&letter, "")
             .replace(&letter.to_uppercase(), "");
-        let res = part1(new_str);
+        let res = part1(&new_str);
         if len_of_shortest > res {
             len_of_shortest = res;
         }
