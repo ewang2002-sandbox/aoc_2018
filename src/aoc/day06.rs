@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 #[allow(dead_code)]
-pub fn execute(input: &Vec<String>) -> (i32, usize) {
+pub fn execute(input: &Vec<String>) -> (i32, i32) {
     // Safe to unwrap parsed nums since we're not dealing with any invalid input.
     let points: Vec<(i32, i32)> = input
         .iter()
@@ -9,7 +9,23 @@ pub fn execute(input: &Vec<String>) -> (i32, usize) {
         .map(|y| (y[0].parse::<i32>().unwrap(), y[1].parse::<i32>().unwrap()))
         .collect();
 
-    return (part1(&points), part2(input));
+    // Find the top-left (x, y) and bottom-right (x, y) points. Essentially, we're going to
+    // restrict ourselves to a "box" where we can test each point individually.
+    let mut tl_x: i32 = -1;
+    let mut tl_y: i32 = -1;
+    let mut br_x: i32 = -1;
+    let mut br_y: i32 = -1;
+
+    for (x, y) in &points {
+        if x > &br_x || br_x == -1 { br_x = *x; }
+        if &tl_x > x || tl_x == -1 { tl_x = *x; }
+        if y > &br_y || br_y == -1 { br_y = *y; }
+        if &tl_y > y || tl_y == -1 { tl_y = *y; }
+    }
+
+    // (x, y, x, y)
+    let box_bounds = (tl_x, tl_y, br_x, br_y);
+    return (part1(&points, box_bounds), part2(&points, box_bounds));
 }
 
 // --- Day 6: Chronal Coordinates ---
@@ -76,31 +92,18 @@ pub fn execute(input: &Vec<String>) -> (i32, usize) {
 //
 // What is the size of the largest area that isn't infinite?
 
-pub fn part1(points: &Vec<(i32, i32)>) -> i32 {
-    // Step 1: Find the top-left (x, y) and bottom-right (x, y) points. Essentially, we're going to
-    // restrict ourselves to a "box" where we can test each point individually.
-    let mut tl_x: i32 = -1;
-    let mut tl_y: i32 = -1;
-    let mut br_x: i32 = -1;
-    let mut br_y: i32 = -1;
-
-    for (x, y) in points {
-        if x > &br_x || &br_x == &-1 { br_x = *x; }
-        if &tl_x > x || &tl_x == &-1 { tl_x = *x; }
-        if y > &br_y || &br_y == &-1 { br_y = *y; }
-        if &tl_y > y || &tl_y == &-1 { tl_y = *y; }
-    }
-
-    // Step 2: Populate hashmap of all points to check.
+pub fn part1(points: &Vec<(i32, i32)>, bounds: (i32, i32, i32, i32)) -> i32 {
+    let (tl_x, tl_y, br_x, br_y) = bounds;
+    // Step 1: Populate hashmap of all points to check.
     let mut map: HashMap<(i32, i32), PointInfo> = HashMap::new();
     for pt in points {
         map.insert(*pt, PointInfo { num_points: 0, is_valid: true });
     }
 
-    // Step 3: Test the very outer layer. Whatever points is the closest to the point in the outer
+    // Step 2: Test the very outer layer. Whatever points is the closest to the point in the outer
     // layer will be marked invalid.
 
-    // 3.1: Test left + right side.
+    // 2.1: Test left + right side.
     for x in (tl_x - 1)..=(br_x + 1) {
         let (pt1, _) = get_nearest_point(points, (x, tl_y - 1));
         map.get_mut(&pt1).unwrap().is_valid = false;
@@ -108,7 +111,7 @@ pub fn part1(points: &Vec<(i32, i32)>) -> i32 {
         map.get_mut(&pt2).unwrap().is_valid = false;
     }
 
-    // 3.2: Test top + bottom side.
+    // 2.2: Test top + bottom side.
     for y in (tl_y - 1)..=(br_y + 1) {
         let (pt1, _) = get_nearest_point(points, (tl_x - 1, y));
         map.get_mut(&pt1).unwrap().is_valid = false;
@@ -116,7 +119,7 @@ pub fn part1(points: &Vec<(i32, i32)>) -> i32 {
         map.get_mut(&pt2).unwrap().is_valid = false;
     }
 
-    // Step 4: Now test every point in between.
+    // Step 3: Now test every point in between.
     for x in tl_x..=br_x {
         for y in tl_y..=br_y {
             let (point, unique) = get_nearest_point(points, (x, y));
@@ -127,14 +130,72 @@ pub fn part1(points: &Vec<(i32, i32)>) -> i32 {
         }
     }
 
+    // Get the highest value in the hashmap.
     return map.iter()
         .filter(|&x| x.1.is_valid)
         .max_by(|a, b| a.1.num_points.cmp(&b.1.num_points))
         .map(|(_k, v)| v.num_points).unwrap();
 }
 
-pub fn part2(line: &Vec<String>) -> usize {
-    return 0;
+// --- Part Two ---
+// On the other hand, if the coordinates are safe, maybe the best you can do is try to find a
+// region near as many coordinates as possible.
+//
+// For example, suppose you want the sum of the Manhattan distance to all of the coordinates to be
+// less than 32. For each location, add up the distances to all of the given coordinates; if the
+// total of those distances is less than 32, that location is within the desired region. Using the
+// same coordinates as above, the resulting region looks like this:
+//
+//  ..........
+//  .A........
+//  ..........
+//  ...###..C.
+//  ..#D###...
+//  ..###E#...
+//  .B.###....
+//  ..........
+//  ..........
+//  ........F.
+//
+// In particular, consider the highlighted location 4,3 located at the top middle of the region.
+// Its calculation is as follows, where abs() is the absolute value function:
+//
+// - Distance to coordinate A: abs(4-1) + abs(3-1) =  5
+// - Distance to coordinate B: abs(4-1) + abs(3-6) =  6
+// - Distance to coordinate C: abs(4-8) + abs(3-3) =  4
+// - Distance to coordinate D: abs(4-3) + abs(3-4) =  2
+// - Distance to coordinate E: abs(4-5) + abs(3-5) =  3
+// - Distance to coordinate F: abs(4-8) + abs(3-9) = 10
+// - Total distance: 5 + 6 + 4 + 2 + 3 + 10 = 30
+//
+// Because the total distance to all coordinates (30) is less than 32, the location is within the
+// region.
+//
+// This region, which also includes coordinates D and E, has a total size of 16.
+//
+// Your actual region will need to be much larger than this example, though, instead including all
+// locations with a total distance of less than 10000.
+//
+// What is the size of the region containing all locations which have a total distance to all given
+// coordinates of less than 10000?
+
+pub fn part2(points: &Vec<(i32, i32)>, bounds: (i32, i32, i32, i32)) -> i32 {
+    let (tl_x, tl_y, br_x, br_y) = bounds;
+    let mut region_size = 0;
+
+    for x in tl_x..=br_x {
+        for y in tl_y..=br_y {
+            let dist_sum: i32 = points
+                .iter()
+                .map(|pt| manhattan_distance(*pt, (x, y)))
+                .sum();
+            if dist_sum < 10000 {
+                region_size += 1;
+            }
+        }
+    }
+
+    return region_size;
 }
 
 
