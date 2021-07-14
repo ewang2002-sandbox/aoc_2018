@@ -92,6 +92,7 @@ pub fn execute(input: &Vec<String>) -> (i32, i32) {
 //
 // What is the size of the largest area that isn't infinite?
 
+#[allow(dead_code)]
 pub fn part1(points: &Vec<(i32, i32)>, bounds: (i32, i32, i32, i32)) -> i32 {
     let (tl_x, tl_y, br_x, br_y) = bounds;
     // Step 1: Populate hashmap of all points to check.
@@ -179,6 +180,7 @@ pub fn part1(points: &Vec<(i32, i32)>, bounds: (i32, i32, i32, i32)) -> i32 {
 // What is the size of the region containing all locations which have a total distance to all given
 // coordinates of less than 10000?
 
+#[allow(dead_code)]
 pub fn part2(points: &Vec<(i32, i32)>, bounds: (i32, i32, i32, i32)) -> i32 {
     let (tl_x, tl_y, br_x, br_y) = bounds;
     let mut region_size = 0;
