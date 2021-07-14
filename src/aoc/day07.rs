@@ -91,7 +91,6 @@ pub fn execute(input: &Vec<String>) -> (String, usize) {
 //
 // In what order should the steps in your instructions be completed?
 
-#[allow(dead_code)]
 pub fn part1(ins: &Vec<Step>, base_letters: &HashSet<&String>) -> String {
     let mut instructions: Vec<&Step> = ins.iter().collect();
     let mut finished = String::new();
@@ -184,7 +183,6 @@ pub fn part1(ins: &Vec<Step>, base_letters: &HashSet<&String>) -> String {
 // With 5 workers and the 60+ second step durations described above, how long will it take to
 // complete all of the steps?
 
-#[allow(dead_code)]
 pub fn part2(ins: &Vec<Step>, base_letters: &HashSet<&String>) -> usize {
     let mut instructions: Vec<&Step> = ins.iter().collect();
     let mut finished = String::new();
