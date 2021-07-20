@@ -12,7 +12,7 @@ pub fn execute(input: &Vec<String>) -> (usize, usize) {
     // Construct the "tree"
     let tree = Tree::new(&mut header_deque);
 
-    return (part1(&tree), part2());
+    return (part1(&tree), part2(&tree));
 }
 
 // https://adventofcode.com/2018/day/8
@@ -61,8 +61,36 @@ pub fn part1(tree: &Tree) -> usize {
     return tree.sum_of_meta_data();
 }
 
-pub fn part2() -> usize {
-    return 0;
+// --- Part Two ---
+// The second check is slightly more complicated: you need to find the value of the root node (A in
+// the example above).
+//
+// The value of a node depends on whether it has child nodes.
+//
+// If a node has no child nodes, its value is the sum of its metadata entries. So, the value of
+// node B is 10+11+12=33, and the value of node D is 99.
+//
+// However, if a node does have child nodes, the metadata entries become indexes which refer to
+// those child nodes. A metadata entry of 1 refers to the first child node, 2 to the second, 3 to
+// the third, and so on. The value of this node is the sum of the values of the child nodes
+// referenced by the metadata entries. If a referenced child node does not exist, that reference is
+// skipped. A child node can be referenced multiple time and counts each time it is referenced. A
+// metadata entry of 0 does not refer to any child node.
+//
+// For example, again using the above nodes:
+//
+// - Node C has one metadata entry, 2. Because node C has only one child node, 2 references a child
+// node which does not exist, and so the value of node C is 0.
+// - Node A has three metadata entries: 1, 1, and 2. The 1 references node A's first child node, B,
+// and the 2 references node A's second child node, C. Because node B has a value of 33 and node C
+// has a value of 0, the value of node A is 33+33+0=66.
+//
+// So, in this example, the value of the root node is 66.
+//
+// What is the value of the root node?
+
+pub fn part2(tree: &Tree) -> usize {
+    return tree.sum_second_check();
 }
 
 struct Node {
@@ -136,6 +164,11 @@ impl Tree {
         return Tree::p_sum_meta_data(&self.root_node);
     }
 
+    /// Gets the sum of the current node's metadata. This will recursively do the same to the other
+    /// child nodes.
+    ///
+    /// # Returns
+    /// The sum of this node's metadata entries + all child nodes.
     fn p_sum_meta_data(node: &Node) -> usize {
         let mut node_sum: usize = 0;
         for n in &node.child_nodes {
@@ -143,5 +176,47 @@ impl Tree {
         }
 
         return node.metadata_entries.iter().sum::<usize>() + node_sum;
+    }
+
+    /// Gets the sum, as specified by the second part.
+    ///
+    /// # Returns
+    /// The sum.
+    pub fn sum_second_check(&self) -> usize {
+        let mut sum: usize = 0;
+        for md in &self.root_node.metadata_entries {
+            sum += Tree::p_sum_second_check(&self.root_node, *md);
+        }
+        return sum;
+    }
+
+    /// Gets the sum, as specified by the second part, of this specific node and its children nodes.
+    ///
+    /// # Returns
+    /// The sum of this node and its children nodes.
+    fn p_sum_second_check(node: &Node, metadata: usize) -> usize {
+        // Base Case
+        if metadata == 0 {
+            return 0;
+        }
+
+        let real_idx: usize = metadata - 1;
+        if real_idx >= node.child_nodes.len() {
+            return 0;
+        }
+
+        // If the child node is empty, then we can return the sum of the metadata of the child
+        // node.
+        if node.child_nodes[real_idx].child_nodes.is_empty() {
+            return node.child_nodes[real_idx].metadata_entries.iter().sum();
+        }
+
+        // Otherwise, sum them up.
+        let mut sum: usize = 0;
+        for metadata in &node.child_nodes[real_idx].metadata_entries {
+            sum += Tree::p_sum_second_check(&node.child_nodes[real_idx], *metadata);
+        }
+
+        return sum;
     }
 }
