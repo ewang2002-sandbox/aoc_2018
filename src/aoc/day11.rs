@@ -1,3 +1,5 @@
+type PowerGrid = [[i32; 300]; 300];
+
 #[allow(dead_code)]
 pub fn execute(input: &Vec<String>) -> (String, String) {
     let serial_number = input[0].parse::<i32>()
@@ -95,36 +97,53 @@ pub fn part1(serial_number: i32) -> String {
     return format!("{},{}", top_left_x + 1, top_left_y + 1);
 }
 
+// --- Part Two ---
+// You discover a dial on the side of the device; it seems to let you select a square of any size,
+// not just 3x3. Sizes from 1x1 to 300x300 are supported.
+//
+// Realizing this, you now must find the square of any size with the largest total power. Identify
+// this square by including its size as a third parameter after the top-left coordinate: a 9x9
+// square with a top-left corner of 3,5 is identified as 3,5,9.
+//
+// For example:
+// - For grid serial number 18, the largest total square (with a total power of 113) is 16x16 and
+// has a top-left corner of 90,269, so its identifier is 90,269,16.
+// - For grid serial number 42, the largest total square (with a total power of 119) is 12x12 and
+// has a top-left corner of 232,251, so its identifier is 232,251,12.
+//
+// What is the X,Y,size identifier of the square with the largest total power?
 
 pub fn part2(serial_number: i32) -> String {
     let power_grid = construct_grid(serial_number);
-    let mut max_sum = 0;
-    let mut side_len = 0;
-    let mut top_left_x = 0;
-    let mut top_left_y = 0;
-    // todo optimize
-    for i in 1..300 {
-        for y in 0..(300 - i) {
-            for x in 0..(300 - i) {
-                let mut sum = 0;
-
-                for dy in 0..i {
-                    for dx in 0..i {
-                        sum += power_grid[x + dx][y + dy];
-                    }
-                }
-
-                if sum > max_sum {
-                    top_left_x = x;
-                    top_left_y = y;
-                    max_sum = sum;
-                    side_len = i;
-                }
-            }
+    let mut all_regions: Vec<BoxedRegion> = vec![];
+    for y in 0..300 {
+        for x in 0..300 {
+            all_regions.push(BoxedRegion::new(x, y, x, y, &power_grid));
         }
     }
 
-    return format!("{},{},{}", top_left_x + 1, top_left_y + 1, side_len);
+    let mut max_region: BoxedRegion = all_regions
+        .iter()
+        .max_by_key(|x| x.sum)
+        .unwrap()
+        .clone();
+
+    for _ in 1..300 {
+        // Instead of having three different iterators, we can just have one. How so?
+        all_regions.iter_mut().for_each(|x| x.add_one(&power_grid));
+        all_regions.retain(|x| x.is_valid);
+
+        let max_region_here = all_regions
+            .iter()
+            .max_by_key(|x| x.sum)
+            .unwrap();
+        if max_region_here.sum > max_region.sum {
+            max_region = max_region_here.clone();
+        }
+    }
+
+    return format!("{},{},{}", max_region.top_left_x + 1, max_region.top_left_y + 1,
+                   max_region.bottom_right_y - max_region.top_left_y + 1);
 }
 
 /// Constructs the power grid for this problem.
@@ -134,8 +153,8 @@ pub fn part2(serial_number: i32) -> String {
 ///
 /// # Returns
 /// - The 300x300 power grid.
-fn construct_grid(serial_number: i32) -> [[i32; 300]; 300] {
-    let mut power_grid: [[i32; 300]; 300] = [[0; 300]; 300];
+fn construct_grid(serial_number: i32) -> PowerGrid {
+    let mut power_grid: PowerGrid = [[0; 300]; 300];
     for x in 0..300 {
         let act_x = x + 1;
 
@@ -165,11 +184,84 @@ fn construct_grid(serial_number: i32) -> [[i32; 300]; 300] {
 /// # Parameters
 /// - `grid`: The grid to print out.
 #[allow(dead_code)]
-fn print_power_grid(grid: &[[i32; 300]; 300]) -> () {
+fn print_power_grid(grid: &PowerGrid) -> () {
     for x in 0..grid.len() {
         for y in 0..grid[x].len() {
             print!("{}\t", grid[x][y]);
         }
         println!();
+    }
+}
+
+
+#[derive(Debug, Copy, Clone)]
+struct BoxedRegion {
+    top_left_x: usize,
+    top_left_y: usize,
+    bottom_right_x: usize,
+    bottom_right_y: usize,
+    sum: i32,
+    is_valid: bool,
+}
+
+impl BoxedRegion {
+    /// Creates a new `BoxedRegion` structure with the specified boxed coordinates and the power
+    /// grid.
+    ///
+    /// # Parameters
+    /// - `top_left_x`: The top-left `x`-coordinate.
+    /// - `top_left_y`: The top-left `y`-coordinate.
+    /// - `bottom_right_x`: The bottom-right `x`-coordinate.
+    /// - `bottom_right_y`: The bottom-right `y`-coordinate.
+    /// - `grid`: The power grid.
+    ///
+    /// # Returns
+    /// - The new `BoxedRegion` structure.
+    pub fn new(top_left_x: usize, top_left_y: usize, bottom_right_x: usize, bottom_right_y: usize,
+               grid: &PowerGrid) -> Self {
+        let mut sum: i32 = 0;
+        for y in top_left_y..=bottom_right_y {
+            for x in top_left_x..=bottom_right_x {
+                sum += grid[x][y];
+            }
+        }
+
+        return BoxedRegion {
+            top_left_x,
+            top_left_y,
+            bottom_right_x,
+            bottom_right_y,
+            sum,
+            is_valid: true,
+        };
+    }
+
+    /// Adds one to the bottom right `(x, y)` coordinates, adding the appropriate sums as needed.
+    ///
+    /// This will modify `is_valid` as needed.
+    ///
+    /// # Parameters
+    /// - `grid`: The power grid.
+    pub fn add_one(&mut self, grid: &PowerGrid) -> () {
+        self.bottom_right_x += 1;
+        self.bottom_right_y += 1;
+        if self.bottom_right_x >= 300 || self.bottom_right_y >= 300 {
+            self.is_valid = false;
+            return;
+        }
+
+        // Bottom right-most edge
+        self.sum += grid[self.bottom_right_x][self.bottom_right_y];
+
+        // Right edge excluding bottom right-most edge
+        for y in self.top_left_y..self.bottom_right_y {
+            self.sum += grid[self.bottom_right_x][y]
+        }
+
+        for x in self.top_left_x..self.bottom_right_x {
+            self.sum += grid[x][self.bottom_right_y];
+        }
+
+        self.is_valid = true;
     }
 }
