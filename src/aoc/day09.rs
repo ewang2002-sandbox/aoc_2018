@@ -1,3 +1,5 @@
+use std::collections::{VecDeque};
+
 #[allow(dead_code)]
 pub fn execute(input: &Vec<String>) -> (usize, usize) {
     let split_input: Vec<_> = input[0].split(" players; last marble is worth ")
@@ -6,7 +8,7 @@ pub fn execute(input: &Vec<String>) -> (usize, usize) {
         .collect();
     let num_players = split_input[0];
     let last_marble = split_input[1];
-    return (part1(num_players, last_marble), part2(num_players, last_marble * 1000));
+    return (part1(num_players, last_marble), part2(num_players, last_marble * 100));
 }
 
 // --- Day 9: Marble Mania ---
@@ -103,7 +105,11 @@ pub fn part1(num_players: usize, last_marble: usize) -> usize {
             }
 
             players[cur_player] += marbles.remove(
-                if cur_marble_idx == (marbles.len() - 1) as i32 {0} else {cur_marble_idx as usize}
+                if cur_marble_idx == (marbles.len() - 1) as i32 {
+                    0
+                } else {
+                    cur_marble_idx as usize
+                }
             ) + cur_marble;
 
             cur_player += 1;
@@ -111,7 +117,11 @@ pub fn part1(num_players: usize, last_marble: usize) -> usize {
             continue;
         }
 
-        cur_marble_idx = add_to_marble_arr(&mut marbles, cur_marble_idx as usize, cur_marble) as i32;
+        cur_marble_idx = add_to_marble_arr(
+            &mut marbles,
+            cur_marble_idx as usize,
+            cur_marble,
+        ) as i32;
         cur_marble += 1;
         cur_player += 1;
     }
@@ -119,8 +129,39 @@ pub fn part1(num_players: usize, last_marble: usize) -> usize {
     return *players.iter().max().unwrap();
 }
 
+// --- Part Two ---
+// Amused by the speed of your answer, the Elves are curious:
+//
+// What would the new winning Elf's score be if the number of the last marble were 100 times larger?
 pub fn part2(num_players: usize, last_marble: usize) -> usize {
-    return part1(num_players, last_marble);
+    let mut circle: VecDeque<usize> = VecDeque::with_capacity(last_marble);
+    circle.push_back(0);
+    let mut player_scores = vec![0; num_players];
+
+    for i in 1..=last_marble {
+        if i % 23 == 0 {
+            player_scores[i % num_players] += i;
+            // Rotate 7 counterclockwise
+            for _ in 0..7 {
+                let t = circle.pop_back().expect("pop back error");
+                circle.push_front(t);
+            }
+
+            // Remove the current marble (the "front")
+            player_scores[i % num_players] += circle.pop_front().expect("pop front error");
+        } else {
+            // Rotate 2 clockwise
+            for _ in 0..2 {
+                let t = circle.pop_front().expect("pop back error");
+                circle.push_back(t);
+            }
+
+            // Then add the new marble (the current one)
+            circle.push_front(i);
+        }
+    }
+
+    return *player_scores.iter().max().unwrap();
 }
 
 
