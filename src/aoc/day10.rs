@@ -189,21 +189,30 @@ pub fn execute(input: &Vec<String>) -> (String, u64) {
 pub fn part1(mut points: Vec<Point>, minimum_seconds: &mut u64) -> String {
     let mut min_sec: u64 = 0;
     let mut min_group: u32 = calculate_group_count(&points);
-    // Pick 20_000 as a possible guess (which works) and check value.
-    // A guess of 10_000 is too low, a guess of 50_000 takes too long.
-    // When I have time, it might be best to figure out a better way to approach this problem
-    // instead of brute-forcing it.
-
     // It should be noted that the group count forms some sort of a quadratic relationship. We
     // start with a large number of groups (since the points are all scattered), but eventually the
     // points will be in a position such that the number of groups will be at a minimum. After this
     // point passes, the number of groups will rapidly increase.
 
-    for i in 1..20_000 {
+    let mut increased_amt = 0;
+    for i in 1..50_000 {
         apply_to_all_pts(&mut points, |x| x.increment_second());
         let group_count = calculate_group_count(&points);
 
+        // If we're increasing too many times, then we assume that we've hit the minimum point
+        // and can thus stop
+        if increased_amt > 20 {
+            break;
+        }
+
+        if group_count > min_group {
+            increased_amt += 1;
+            continue;
+        }
+
+
         if group_count < min_group {
+            increased_amt = 0;
             min_group = group_count;
             min_sec = i;
         }
@@ -271,7 +280,8 @@ pub fn part2(min_sec: u64) -> u64 {
 ///
 /// # Notes
 /// - Should we be using `Fn` or `FnMut` here?
-fn apply_to_all_pts<F>(pts: &mut Vec<Point>, func: F) where F: Fn(&mut Point) -> () {
+fn apply_to_all_pts<F>(pts: &mut Vec<Point>, func: F) -> ()
+    where F: Fn(&mut Point) -> () {
     pts.into_iter().for_each(|x| func(x));
 }
 
