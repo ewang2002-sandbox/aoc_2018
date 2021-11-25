@@ -129,17 +129,35 @@ pub fn part2(serial_number: i32) -> String {
         .clone();
 
     for _ in 1..300 {
-        // Instead of having three different iterators, we can just have one. How so?
-        all_regions.iter_mut().for_each(|x| x.add_one(&power_grid));
-        all_regions.retain(|x| x.is_valid);
+        // all_regions.iter_mut().for_each(|x| x.add_one(&power_grid));
+        // all_regions.retain(|x| x.is_valid);
+        //
+        // let max_region_here = all_regions
+        //     .iter()
+        //     .max_by_key(|x| x.sum)
+        //     .unwrap();
+        // if max_region_here.sum > max_region.sum {
+        //     max_region = max_region_here.clone();
+        // }
+        let mut valid_regions: Vec<BoxedRegion> = vec![];
+        let mut max_region_here = all_regions[0];
+        for mut region in all_regions {
+            region.add_one(&power_grid);
+            if region.is_valid {
+                if region.sum > max_region_here.sum {
+                    max_region_here = region;
+                }
 
-        let max_region_here = all_regions
-            .iter()
-            .max_by_key(|x| x.sum)
-            .unwrap();
-        if max_region_here.sum > max_region.sum {
-            max_region = max_region_here.clone();
+                valid_regions.push(region);
+                continue;
+            }
         }
+
+        if max_region_here.sum > max_region.sum {
+            max_region = max_region_here;
+        }
+
+        all_regions = valid_regions;
     }
 
     return format!("{},{},{}", max_region.top_left_x + 1, max_region.top_left_y + 1,
