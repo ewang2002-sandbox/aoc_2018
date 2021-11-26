@@ -178,13 +178,18 @@ pub fn part2(init_state: &String, plant_notes: &HashMap<String, String>) -> i64 
     let mut sum = 0;
     let bytes = curr_state.bytes().collect::<Vec<_>>();
     for i in 0..bytes.len() {
-        // Note that 50_000_000_000 would include the plants that were already shifted.
-        // curr_state is the second generation that was repeated (i.e. generation_count - 1
-        // would give us the first generation such that the next generation would result in
-        // repetition). Therefore, we need to account for that shift.
+        // Here, we note that 50_000_000_000 is the number of generations that we need to find the
+        // sum of the numbers of the plants for. However, we've already gone through
+        // `generation_count` generations (as reflected by `curr_state`). So, we need to subtract
+        // `curr_state` from 50_000_000_000 to get the actual number of generations to offset our
+        // numbers by.
         //
-        // Effectively, (50_000_000_000 - generation_count) is the number of times we would
-        // have to shift curr_states to get the right answer.
+        // Put it another way, if we didn't subtract `generation_count` from 50 billion, we would
+        // be offsetting each number by 50 billion + `generation_count` since `curr_state` already
+        // accounts for `generation_count` generations.
+        //
+        // Put it another way, (50_000_000_000 - generation_count) is the number of times we would
+        // have to shift `curr_states` right with '.' to get the right answer.
         //
         // Take this example. Suppose that the `init_plant_idx` (initial plant index) is 0 and we
         // wanted to find a more efficient way to calculate generation 12's value.
