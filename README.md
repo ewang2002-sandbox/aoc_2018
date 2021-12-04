@@ -1,6 +1,9 @@
 # Advent Of Code 2018
 My solutions to the [2018 Advent of Code](https://adventofcode.com/2018) questions.
 
+## Warning
+This repository will no longer be updated, and has been archived as a result. I have consolidated all of my solutions to [this repository](https://github.com/ewang2002/AdventOfCode). 
+
 ## Language of Choice
 - Rust
 
